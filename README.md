@@ -43,9 +43,6 @@ $ python run.py
 $ APPLICATION_ENV="Production" gunicorn -k gevent --bind 0.0.0.0:8001 run:app
 ```
 
-### Heroku
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
 * add your dev/production configurations in config.py
 
 ```python
