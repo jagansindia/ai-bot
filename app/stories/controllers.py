@@ -80,7 +80,7 @@ def readStory(storyId):
 
 @stories.route('/<storyId>', methods=['PUT'])
 def updateStory(storyId):
-    jsondata = loads(request.get_data())
+    jsondata = loads(request.get_data().decode('utf-8'))
     story = Story.objects.get(id=ObjectId(storyId))
     story = update_document(story, jsondata)
     story.save()

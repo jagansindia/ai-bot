@@ -14,7 +14,8 @@ from app.commons import buildResponse
 from app.core.intentClassifier import IntentClassifier
 from app.core import sequenceLabeler
 from app.stories.models import Story
-
+import sys
+import random
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
@@ -76,13 +77,7 @@ def api():
             story = Story.objects(
                 intentName=app.config["DEFAULT_WELCOME_INTENT_NAME"]).first()
             resultJson["complete"] = True
-            resultJson["intent"]["name"] = story.storyName
-            resultJson["intent"]["storyId"] = str(story.id)
             resultJson["input"] = requestJson.get("input")
-            template = Template(
-                story.speechResponse,
-                undefined=SilentUndefined)
-            resultJson["speechResponse"] = template.render(**context)
 
             logger.info(requestJson.get("input"), extra=resultJson)
             return buildResponse.buildJson(resultJson)
@@ -97,7 +92,7 @@ def api():
             parameters = []
 
         if ((requestJson.get("complete") is None) or (
-                requestJson.get("complete") is True)):
+                    requestJson.get("complete") is True)):
             resultJson["intent"] = {
                 "name": story.intentName,
                 "storyId": str(story.id)
@@ -165,7 +160,7 @@ def api():
                 resultJson["intent"] = {}
                 resultJson["complete"] = True
 
-        if resultJson["complete"]: 
+        if resultJson["complete"]:
             if story.apiTrigger:
                 isJson = False
                 parameters = resultJson["extractedParameters"]
@@ -180,18 +175,22 @@ def api():
                 try:
                     result = callApi(renderedUrl,
                                      story.apiDetails.requestType,
-                                     parameters,isJson)
+                                     parameters, isJson)
                 except Exception as e:
                     print(e)
                     resultJson["speechResponse"] = "Service is not available. "
                 else:
                     print(result)
                     context["result"] = result
-                    template = Template(story.speechResponse, undefined=SilentUndefined)
+                    responses = story.speechResponse.split('\n')
+                    response = random.choice(responses)
+                    template = Template(response, undefined=SilentUndefined)
                     resultJson["speechResponse"] = template.render(**context)
             else:
                 context["result"] = {}
-                template = Template(story.speechResponse, undefined=SilentUndefined)
+                responses = story.speechResponse.split('\n')
+                response = random.choice(responses)
+                template = Template(response, undefined=SilentUndefined)
                 resultJson["speechResponse"] = template.render(**context)
         logger.info(requestJson.get("input"), extra=resultJson)
         return buildResponse.buildJson(resultJson)
